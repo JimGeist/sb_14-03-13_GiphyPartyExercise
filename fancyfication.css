@@ -1,0 +1,46 @@
+body{
+    background-color: #404040;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: antiquewhite;
+    font-size: 16px; 
+}
+.giphy-attribution {
+    float:right
+}
+
+div{
+    margin-top: 1em;
+}
+
+.error {
+    color: crimson;
+}
+
+form {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 16px;
+}
+
+.formbutton{
+    margin-left: 1em;
+    width: 10em;
+    height: 3em;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.formtext{
+    width: 15em;
+    height: 1.5em;   
+    font-size: 16px; 
+}
+
+#msg {
+    margin-top: 2em;
+}
+
+.rmvbutton{
+    margin-left: 1em;
+    font-weight: bold;
+    padding: 0em .75em;
+}
