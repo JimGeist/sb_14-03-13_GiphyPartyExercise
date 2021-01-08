@@ -5,30 +5,23 @@ const btnRemove = document.getElementById("button-remove");
 const msg = document.getElementById("msg");
 const divGiphys = document.getElementById("giphy-giphs");
 
-// create a Set to quickly determine if a GiphyId is already selected
-const myGiphyIds = new Set();
-// create an array that will hold the Id and url for all the displayed Giphys.
-const myGiphys = [];
-
 class Giphy {
 
     constructor() {
 
-        //this.giphys = [];
+        // object will contain giphy id and giphy url for giphys loaded on
+        //  the page
         this.giphys = {};
+        // object provides a quick means of determining if a giphy exists on 
+        //  the page
         this.giphyIds = new Set();
+        // counter of how many giphys were loaded during the search
         this.nbrGiphysAdded = 0;
-        //this.nbrGiphysOnPage = 0;
 
     }
 
 
-    // saveGiphy(giphyId, giphyUrl) {
-    //     this.giphys[giphyId] = giphyUrl;
-    // }
-
     wasGiphySaved(giphyId, giphyUrl) {
-
         // returns true when giphyId and url were saved
         if (this.giphyIds.has(giphyId)) {
             return false;
@@ -36,7 +29,8 @@ class Giphy {
             this.giphyIds.add(giphyId);
             this.giphys[giphyId] = giphyUrl;
             this.nbrGiphysAdded++;
-            this.nbrGiphysOnPage++;
+
+            this.setLocalStorage(giphyId, giphyUrl, "add");
 
             return true;
         }
@@ -44,10 +38,11 @@ class Giphy {
     }
 
     removeGiphy(giphyId) {
+        // removes a Giphy from class storage
         if (this.giphyIds.has(giphyId)) {
-            //this.nbrGiphysOnPage--;
             this.giphyIds.delete(giphyId);
             delete this.giphys[giphyId];
+            this.setLocalStorage(giphyId, "", "rmv");
         }
     };
 
@@ -64,14 +59,42 @@ class Giphy {
     }
 
     resetAll() {
+        // need to clear localStorage first because we need the ids in giphyIds
+        //  to clear information for each giphy loaded on the page.
+        this.setLocalStorage("", "", "clr");
         this.giphys = {};
         this.giphyIds.clear();
         this.nbrGiphysAdded = 0;
+
     }
 
+    setLocalStorage(id, url, action) {
+
+        switch (action) {
+            case "add":
+                localStorage.setItem("giphyPty1-" + id, JSON.stringify({ id, url }));
+                // the set needs to convert to an array in order to pass it to local storage.
+                localStorage.setItem("giphyPty0-ids", JSON.stringify([...this.giphyIds]));
+                break;
+            case "rmv":
+                localStorage.removeItem("giphyPty1-" + id);
+                // the set needs to convert to an array in order to pass it to local storage.
+                localStorage.setItem("giphyPty0-ids", JSON.stringify([...this.giphyIds]));
+                break;
+            case "clr":
+                if (this.giphyIds.size > 0) {
+                    for (let giphyId of this.giphyIds) {
+                        localStorage.removeItem("giphyPty1-" + giphyId);
+                    }
+                    localStorage.removeItem("giphyPty0-ids")
+                }
+                break;
+        }
+    }
 }
 
-const mg = new Giphy();
+const myGiphys = new Giphy();
+
 
 function setMessage(inMsg, inMsgIsCritical) {
 
@@ -79,8 +102,19 @@ function setMessage(inMsg, inMsgIsCritical) {
     msg.innerHTML = inMsg;
 
     if (inMsgIsCritical) {
-        msg.classList.add("error");
+        msg.classList.add("text-danger");
+    } else {
+        msg.classList.add("text-light");
     }
+
+
+}
+
+
+function clearMessages() {
+
+    msg.innerHTML = "&nbsp;";
+    msg.classList.remove(...["error", "text-danger"]);
 
 }
 
@@ -89,7 +123,7 @@ function buildAppendImg(inGiphy) {
 
     const newImg = document.createElement("img");
     newImg.setAttribute("id", inGiphy.id);
-    newImg.setAttribute("src", inGiphy.imgDownsizeMedUrl);
+    newImg.setAttribute("src", inGiphy.url);
     newImg.classList.add("img-giphy");
     divGiphys.append(newImg);
 
@@ -103,19 +137,13 @@ function displayGiphys(inGiphys) {
 
     for (let idx = 0; idx < inGiphys.length; idx++) {
         buildAppendImg(inGiphys[idx]);
-        // retain the id and url of the displayed image
-        myGiphys.push(inGiphys[idx]);
-        //mg.saveGiphy(inGiphys[idx].id, inGiphys[idx].imgDownsizeMedUrl);
     }
 
-    // were any giphys added?
-    if (mg.getAddedCtr() > 0) {
-        setMessage(`${mg.getAddedCtr()} GIPHYs were added to your page. `
-            + `There are ${mg.getTotalGiphys()} GIPHYs on your page. `
+    // were any giphys added to the page?
+    if (myGiphys.getAddedCtr() > 0) {
+        setMessage(`${myGiphys.getAddedCtr()} GIPHYs were added to your page. `
+            + `There are ${myGiphys.getTotalGiphys()} GIPHYs on your page. `
             + "Click on a single GIPHY to remove it, click on 'Remove all GIPHYs' to remove all GIPHYs.", false);
-
-        //inputSearch.value = '';
-        mg.resetAddedCtr();
     }
 
 }
@@ -136,49 +164,28 @@ function selectGiphys(inData) {
             let ctr = 0;
             while (ctr < 5) {
 
-                // build a success message with number of giphys returned / displayed and 
-                // to click on individual giphys to remove.
-
                 idx = Math.floor(Math.random() * inData.length)
-                if (mg.wasGiphySaved(inData[idx].id, inData[idx].images.downsized_medium.url)) {
+                if (myGiphys.wasGiphySaved(inData[idx].id, inData[idx].images.downsized_medium.url)) {
                     outGiphys.push({
                         id: inData[idx].id,
-                        imgDownsizeMedUrl: inData[idx].images.downsized_medium.url
+                        url: inData[idx].images.downsized_medium.url
                     });
                     ctr++;
                 }
-                // if (myGiphyIds.has(inData[idx].id) == false) {
-                //     myGiphyIds.add(inData[idx].id);
-                //     outGiphys.push({
-                //         id: inData[idx].id,
-                //         imgDownsizeMedUrl: inData[idx].images.downsized_medium.url
-                //     });
-                //     ctr++;
-                // }
-
 
             }
 
         } else {
-            // use them all
+            //  5 or less giphys found in search. Use them all
             for (idx = 0; idx < inData.length; idx++) {
-                // build a success message with number of giphys returned / displayed and 
-                // to click on individual giphys to remove.
 
-                if (mg.wasGiphySaved(inData[idx].id, inData[idx].images.downsized_medium.url)) {
+                if (myGiphys.wasGiphySaved(inData[idx].id, inData[idx].images.downsized_medium.url)) {
                     outGiphys.push({
                         id: inData[idx].id,
-                        imgDownsizeMedUrl: inData[idx].images.downsized_medium.url
+                        url: inData[idx].images.downsized_medium.url
                     });
                 }
 
-                // if (myGiphyIds.has(inData[idx].id) == false) {
-                //     myGiphyIds.add(inData[idx].id);
-                //     outGiphys.push({
-                //         id: inData[idx].id,
-                //         imgDownsizeMedUrl: inData[idx].images.downsized_medium.url
-                //     });
-                // }
             }
         }
     }
@@ -222,32 +229,20 @@ async function getGiphyGiphs(inSearch) {
 }
 
 
-function clearMessages() {
-
-    msg.innerHTML = "&nbsp;";
-    msg.classList.remove("error");
-
-}
-
-
 btnSearch.addEventListener("click", function (event) {
 
     event.preventDefault();
 
     clearMessages();
+    myGiphys.resetAddedCtr();
 
     const inputSearch = document.getElementById("text-search");
 
-
     if (inputSearch.value.trim().length > 0) {
-        // something was entered. Let's do it!
+        // something was entered for search text. Let's do it!
         getGiphyGiphs(inputSearch.value.trim());
 
-
-
     }
-
-
 
 })
 
@@ -256,18 +251,13 @@ btnRemove.addEventListener("click", function (event) {
 
     event.preventDefault();
 
-    // Setting innerHTML to '' just seems wrong to clear all images.
+    // Setting innerHTML to '' just seems wrong to clear all images!
     // jQuery to remove all images via $('img.img-giphy').remove();
-    //  or a loop to run through myGiphyIds for the Ids
+    //  or a loop to run through giphyIds for the Ids
     $('img.img-giphy').remove();
 
-    mg.resetAll();
-
-    // myGiphyIds.clear();
-
-    // for (let ctr = myGiphys.length; ctr > 0; ctr--) {
-    //     myGiphys.pop();
-    // }
+    clearMessages();
+    myGiphys.resetAll();
 
 })
 
@@ -275,15 +265,67 @@ btnRemove.addEventListener("click", function (event) {
 // jquery to remove an image when selected
 $("#giphy-giphs").on("click", "img", function () {
 
-    // remove the giphy from myGiphyIds set 
     const giphyId = $(this).attr("id");
 
-    mg.removeGiphy(giphyId);
+    // remove the giphy from class storage
+    myGiphys.removeGiphy(giphyId);
 
-    setMessage(`One GIPHY was removed, ${mg.getTotalGiphys()} remain on your page. `, false);
+    setMessage(`One GIPHY was removed, ${myGiphys.getTotalGiphys()} remain on your page. `, false);
 
     $(this).remove();
 
 })
 
 
+// Page Load Event.
+$(function () {
+
+    // Once page loads, check localStorage for any giphyPty values.
+    // giphyPty0-ids: has the ids for all giphys in localStorage
+    // giphyPty1-{giphyId}: an entry in local storage with the id and url exists for 
+    //  each giphy on the page. We cannot get these values without valid ids from  
+    //  giphyPty0-ids
+
+
+    const lsGiphyIds = JSON.parse(localStorage.getItem("giphyPty0-ids"));
+
+    if (lsGiphyIds) {
+
+        if (lsGiphyIds.length > 0) {
+            // we have an array of giphy Ids. Get the url associated with the id
+            const outGiphys = [];
+            for (let giphyId of lsGiphyIds) {
+                const lsGiphy = JSON.parse(localStorage.getItem("giphyPty1-" + giphyId));
+                if (lsGiphy) {
+                    // lsGiphy is not null
+                    if ((lsGiphy.id) && (lsGiphy.url)) {
+
+                        if (myGiphys.wasGiphySaved(lsGiphy.id, lsGiphy.url)) {
+                            outGiphys.push({
+                                id: lsGiphy.id,
+                                url: lsGiphy.url
+                            })
+                        }
+                    }
+                }
+            }
+            if (outGiphys.length > 0) {
+                displayGiphys(outGiphys);
+                if (myGiphys.getTotalGiphys() > 0) {
+
+                    if (myGiphys.getTotalGiphys() > 1) {
+                        setMessage(`There are ${myGiphys.getTotalGiphys()} GIPHYs on your page. `, false);
+                    } else {
+                        setMessage(`There is ${myGiphys.getTotalGiphys()} GIPHY on your page. `, false);
+                    }
+
+                } else {
+                    clearMessages();
+                }
+
+            }
+        }
+
+    }
+
+});

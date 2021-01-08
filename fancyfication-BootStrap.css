@@ -1,0 +1,53 @@
+body{
+    background-color: #404040;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: antiquewhite;
+    font-size: 16px; 
+}
+
+.giphy-attribution {
+    float:right
+}
+
+div{
+    margin-top: 1em;
+}
+
+.error {
+    color: crimson;
+}
+
+form {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 16px;
+}
+
+.formbutton{
+    margin-left: 1em;
+    width: 13em;
+    height: 3em;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+#button-remove{
+    color: antiquewhite;
+    background-color: crimson;
+    font-weight: bold;
+}
+
+.formtext{
+    width: 15em;
+    height: 1.5em;   
+    font-size: 16px; 
+}
+
+#msg {
+    margin-top: 1em;
+}
+
+
+.img-giphy {
+    padding: 0.3em;
+    border-radius: 1em;
+}

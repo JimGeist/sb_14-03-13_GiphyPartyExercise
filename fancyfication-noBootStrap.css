@@ -12,7 +12,7 @@ div{
     margin-top: 1em;
 }
 
-.error {
+.text-danger {
     color: crimson;
 }
 
@@ -29,6 +29,12 @@ form {
     font-weight: bold;
 }
 
+#button-remove{
+    color: antiquewhite;
+    background-color: crimson;
+    font-weight: bold;
+}
+
 .formtext{
     width: 15em;
     height: 1.5em;   
@@ -36,14 +42,9 @@ form {
 }
 
 #msg {
-    margin-top: 2em;
+    margin-top: 1em;
 }
 
-.rmvbutton{
-    margin-left: 1em;
-    font-weight: bold;
-    padding: 0em .75em;
-}
 
 .img-giphy {
     padding: 0.3em;
