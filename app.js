@@ -200,7 +200,7 @@ async function getGiphyGiphs(inSearch) {
     let fixedSearch = inSearch.split(" ").join("%20");
     try {
         const apiKey = "&api_key=CfuzfKdpvcxCi5w4YYucSvIP4dvaDkOR";
-        const url = `http://api.giphy.com/v1/gifs/search?q=${fixedSearch}${apiKey}`;
+        const url = `https://api.giphy.com/v1/gifs/search?q=${fixedSearch}${apiKey}`;
         const res = await axios.get(url);
 
         if (res.status = 200) {
